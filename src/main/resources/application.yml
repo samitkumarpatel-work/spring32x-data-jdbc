@@ -1,0 +1,15 @@
+spring:
+  mvc:
+    problemdetails:
+      enabled: true
+  application:
+    name: @project.artifactId@
+    version: @project.version@
+
+logging:
+  level:
+    org:
+      springframework:
+        jdbc: DEBUG
+
+

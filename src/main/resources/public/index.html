@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>data JDBC</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <style>
+            div {
+                margin-top: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container" id="app">
+            <h1>{{ message }}</h1>
+
+            <div class="alert alert-danger" role="alert" v-if="error">
+                {{ error }}
+            </div>
+
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="department-tab" data-bs-toggle="tab" data-bs-target="#department-tab-pane" type="button" role="tab" aria-controls="department-tab-pane" aria-selected="true" @click="fetchDepartment">DEPARTMENT</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="employee-tab" data-bs-toggle="tab" data-bs-target="#employee-tab-pane" type="button" role="tab" aria-controls="employee-tab-pane" aria-selected="false" @click="fetchEmployee">EMPLOYEE</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="address-tab" data-bs-toggle="tab" data-bs-target="#address-tab-pane" type="button" role="tab" aria-controls="address-tab-pane" aria-selected="false" @click="fetchAddress">ADDRESS</button>
+                </li>
+            </ul>
+            <div class="tab-content" id="myTabContent">
+                <div class="tab-pane fade show active" id="department-tab-pane" role="tabpanel" aria-labelledby="department-tab" tabindex="0">
+
+                    <p v-if="departments.length === 0">No data found..</p>
+                    <table class="table table-striped table-hover" v-else>
+                        <tbody>
+                            <tr v-for="d in departments">
+                                <td v-for="dk in Object.keys(d)">
+                                    <p style="text-decoration: underline">{{ dk }}</p>
+                                    <p>{{ d[dk] }}</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="employee-tab-pane" role="tabpanel" aria-labelledby="employee-tab" tabindex="0">
+                    <p v-if="employees.length === 0">No data found..</p>
+                    <table class="table table-striped table-hover" v-else>
+                        <tbody>
+                            <tr v-for="e in employees">
+                                <td v-for="ek in Object.keys(e)">
+                                    <p style="text-decoration: underline">{{ ek }}</p>
+                                    <p>{{ e[ek] }}</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="address-tab-pane" role="tabpanel" aria-labelledby="address-tab" tabindex="0">...</div>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+        <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+        <script>
+            const { createApp, ref } = Vue
+
+            createApp({
+                setup() {
+                    const message = ref('Hello vue!')
+                    const employees = ref([])
+                    const employee = ref({})
+                    const departments = ref([])
+                    const department = ref({})
+                    const addresses = ref([])
+                    const address = ref({})
+                    const error = ref(null)
+                    function fetchEmployee() {
+                        fetch('/employee')
+                            .then(response => response.json())
+                            .then(data => employee.value = data)
+                            .catch(err => error.value = err)
+                    }
+                    function fetchEmployeeById(id) {
+                        fetch('/employee/' + id)
+                            .then(response => response.json())
+                            .then(data => employee.value = data)
+                            .catch(err => error.value = err)
+                    }
+                    function fetchDepartment() {
+                        fetch('/department')
+                            .then(response => response.json())
+                            .then(data => departments.value = data)
+                            .catch(err => error.value = err)
+                    }
+                    function fetchDepartmentById(id) {
+                        fetch('/department/' + id)
+                            .then(response => response.json())
+                            .then(data => department.value = data)
+                            .catch(err => error.value = err)
+                    }
+
+                    function fetchAddress() {
+                        fetch('/address')
+                            .then(response => response.json())
+                            .then(data => addresses.value = data)
+                            .catch(err => error.value = err)
+                    }
+
+                    function fetchAddressById(id) {
+                        fetch('/address/' + id)
+                            .then(response => response.json())
+                            .then(data => address.value = data)
+                            .catch(err => error.value = err)
+                    }
+
+                    return {
+                        message,
+                        employees , employee,
+                        departments, department,
+                        addresses, address,
+                        error,
+                        fetchEmployee, fetchEmployeeById,
+                        fetchDepartment, fetchDepartmentById,
+                        fetchAddress, fetchAddressById
+                    }
+                }
+            }).mount('#app')
+        </script>
+    </body>
+</html>
