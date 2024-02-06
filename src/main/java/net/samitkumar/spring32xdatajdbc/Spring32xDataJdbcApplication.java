@@ -6,11 +6,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.MappedCollection;
 import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
@@ -18,8 +18,8 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 @SpringBootApplication
 @Slf4j
@@ -208,6 +208,7 @@ class DepartmentServiceImpl implements DepartmentService {
 
 	@Override
 	public Department save(Department department) {
+		Assert.isNull(department.id(), "id should be null for POST request");
 		return departmentRepository.save(department);
 	}
 
@@ -239,6 +240,7 @@ class AddressServiceImpl implements AddressService {
 
 	@Override
 	public Address save(Address address) {
+		Assert.isNull(address.id(), "id should be null for POST request");
 		return addressRepository.save(address);
 	}
 
@@ -270,6 +272,7 @@ class EmployeeServiceImpl implements EmployeeService {
 
 	@Override
 	public Employee save(Employee employee) {
+		Assert.isNull(employee.id(), "id should be null for POST request");
 		return employeeRepository.save(employee);
 	}
 

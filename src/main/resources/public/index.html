@@ -33,13 +33,13 @@
             </ul>
             <div class="tab-content" id="myTabContent">
                 <div class="tab-pane fade show active" id="department-tab-pane" role="tabpanel" aria-labelledby="department-tab" tabindex="0">
-
+                    <hello-world msg-from="DEPT"></hello-world>
+                    <generic-form></generic-form>
                     <p v-if="departments.length === 0">No data found..</p>
                     <table class="table table-striped table-hover" v-else>
                         <tbody>
                             <tr v-for="d in departments">
                                 <td v-for="dk in Object.keys(d)">
-                                    <p style="text-decoration: underline">{{ dk }}</p>
                                     <p>{{ d[dk] }}</p>
                                 </td>
                             </tr>
@@ -47,6 +47,7 @@
                     </table>
                 </div>
                 <div class="tab-pane fade" id="employee-tab-pane" role="tabpanel" aria-labelledby="employee-tab" tabindex="0">
+                    <hello-world msg-from="EMP"></hello-world>
                     <p v-if="employees.length === 0">No data found..</p>
                     <table class="table table-striped table-hover" v-else>
                         <tbody>
@@ -59,16 +60,98 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="tab-pane fade" id="address-tab-pane" role="tabpanel" aria-labelledby="address-tab" tabindex="0">...</div>
+                <div class="tab-pane fade" id="address-tab-pane" role="tabpanel" aria-labelledby="address-tab" tabindex="0">
+                    <hello-world msg-from="Address" n="1"></hello-world>
+                </div>
             </div>
         </div>
+
+        <template id="hello-world">
+            <p>{{ msg }}, {{ msgFrom }} - {{ count }}</p>
+        </template>
+
+        <template id="generic-form">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-whatever="@fat">
+                <i class="bi bi-plus-square"></i>
+            </button>
+
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="exampleModalLabel">Modal Header</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="mb-3">
+                                    <label for="recipient-name" class="col-form-label">Recipient:</label>
+                                    <input type="text" class="form-control" id="recipient-name">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="message-text" class="col-form-label">Message:</label>
+                                    <textarea class="form-control" id="message-text"></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" :data-bs-dismiss="closeModal" @click="captureAndCloseModal">Send message</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
         <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
         <script>
-            const { createApp, ref } = Vue
+            const { createApp, ref, defineComponent } = Vue
+
+            const HelloWorld = defineComponent({
+                props: {
+                    msgFrom: {
+                        type: String, // Change the type based on your data
+                        required: true,
+                    },
+                    n: {
+                        type: Number,
+                        default: 0,
+                    }
+                },
+                template: '#hello-world',
+                setup(props) {
+                    const msg = ref('Hello World !')
+                    const msgFrom = ref(props.msgFrom)
+                    const count = ref(props.n)
+                    return {
+                        msg, msgFrom, count
+                    };
+                }
+            });
+
+            const GenericForm = defineComponent({
+                props: {
+                },
+                template: '#generic-form',
+                setup(props) {
+                    const closeModal = ref('')
+
+                    function captureAndCloseModal() {
+                        console.log('captureAndClose')
+                        closeModal.value = 'modal'
+                    }
+
+                    return {
+                        closeModal, captureAndCloseModal
+                    };
+                }
+            });
 
             createApp({
+                components: {
+                    HelloWorld, GenericForm
+                },
                 setup() {
                     const message = ref('Hello vue!')
                     const employees = ref([])
@@ -116,7 +199,7 @@
                             .then(data => address.value = data)
                             .catch(err => error.value = err)
                     }
-
+                    fetchDepartment()
                     return {
                         message,
                         employees , employee,
