@@ -12,13 +12,16 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.CorsWebFilter;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 import java.util.Optional;
 
 @SpringBootApplication
@@ -27,6 +30,19 @@ public class Spring32xDataJdbcApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(Spring32xDataJdbcApplication.class, args);
+	}
+
+	@Bean
+	CorsWebFilter corsFilter() {
+		CorsConfiguration config = new CorsConfiguration();
+		config.addAllowedOrigin("*");
+		config.addAllowedHeader("*");
+		config.addAllowedMethod("*");
+
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", config);
+
+		return new CorsWebFilter(source);
 	}
 
 	@Bean
@@ -39,6 +55,13 @@ public class Spring32xDataJdbcApplication {
 									.ok()
 									.body(Flux.fromIterable(departmentService.findAll()), Department.class);
 						})
+						.POST("", serverRequest -> {
+							return serverRequest
+									.bodyToMono(Department.class)
+									.map(departmentService::save)
+									.flatMap(ServerResponse.ok()::bodyValue);
+
+						})
 						.GET("/{id}", serverRequest -> {
 							var id = Integer.parseInt(serverRequest.pathVariable("id"));
 							return Mono.fromCallable(() -> departmentService
@@ -47,13 +70,6 @@ public class Spring32xDataJdbcApplication {
 									)
 									.flatMap(ServerResponse.ok()::bodyValue);
 						})
-						.POST("", serverRequest -> {
-							return serverRequest
-									.bodyToMono(Department.class)
-									.map(departmentService::save)
-									.flatMap(ServerResponse.ok()::bodyValue);
-
-						}))
 						.PUT("/{id}", serverRequest -> {
 							return serverRequest
 									.bodyToMono(Department.class)
@@ -62,26 +78,30 @@ public class Spring32xDataJdbcApplication {
 									.flatMap(ServerResponse.ok()::bodyValue);
 						})
 						.DELETE("/{id}", serverRequest -> {
-							departmentService.deleteById(Integer.parseInt(serverRequest.pathVariable("id")));
-							return ServerResponse.ok().build();
-						})
+							var id = Integer.parseInt(serverRequest.pathVariable("id"));
+							log.info("Deleting department with id {}", id);
+							return Mono
+									.fromRunnable(() -> departmentService.deleteById(id))
+									.then(ServerResponse.ok().bodyValue(Map.of("message","SUCCESS")));
+
+						}))
 				.path("/address", builder -> builder
 						.GET("", request -> {
 							return ServerResponse
 									.ok()
 									.body(Flux.fromIterable(addressService.findAll()), Address.class);
 						})
-						.GET("/{id}", request -> {
-							var id = Integer.parseInt(request.pathVariable("id"));
-							return Mono.fromCallable(() -> addressService
-									.findById(id)
-									.orElseThrow(() -> new DataNotFoundException("Address not found")))
-									.flatMap(ServerResponse.ok()::bodyValue);
-						})
 						.POST("", request -> {
 							return request
 									.bodyToMono(Address.class)
 									.map(addressService::save)
+									.flatMap(ServerResponse.ok()::bodyValue);
+						})
+						.GET("/{id}", request -> {
+							var id = Integer.parseInt(request.pathVariable("id"));
+							return Mono.fromCallable(() -> addressService
+											.findById(id)
+											.orElseThrow(() -> new DataNotFoundException("Address not found")))
 									.flatMap(ServerResponse.ok()::bodyValue);
 						})
 						.PUT("/{id}", request -> {
@@ -94,8 +114,8 @@ public class Spring32xDataJdbcApplication {
 						})
 						.DELETE("/{id}", request -> {
 							var id = Integer.parseInt(request.pathVariable("id"));
-							addressService.deleteById(id);
-							return ServerResponse.ok().build();
+							return Mono.fromRunnable(() ->	addressService.deleteById(id))
+									.then(ServerResponse.ok().bodyValue(Map.of("message","SUCCESS")));
 						})
 				)
 				.path("/employee", builder -> builder
@@ -104,18 +124,18 @@ public class Spring32xDataJdbcApplication {
 									.ok()
 									.body(Flux.fromIterable(employeeService.findAll()), Employee.class);
 						})
+						.POST("", request -> {
+							return request
+									.bodyToMono(Employee.class)
+									.map(employeeService::save)
+									.flatMap(ServerResponse.ok()::bodyValue);
+						})
 						.GET("/{id}", request -> {
 							var id = Integer.parseInt(request.pathVariable("id"));
 							return Mono.fromCallable(() -> employeeService
 											.findById(id)
 											.orElseThrow(() -> new DataNotFoundException("Employee not found"))
 									)
-									.flatMap(ServerResponse.ok()::bodyValue);
-						})
-						.POST("", request -> {
-							return request
-									.bodyToMono(Employee.class)
-									.map(employeeService::save)
 									.flatMap(ServerResponse.ok()::bodyValue);
 						})
 						.PUT("/{id}", request -> {
@@ -128,7 +148,8 @@ public class Spring32xDataJdbcApplication {
 						})
 						.DELETE("/{id}", request -> {
 							var id = Integer.parseInt(request.pathVariable("id"));
-							return ServerResponse.ok().build();
+							return Mono.fromRunnable(() ->	employeeService.deleteById(id))
+									.then(ServerResponse.ok().bodyValue(Map.of("message","SUCCESS")));
 						})
 				)
 				.after((request, response) -> {

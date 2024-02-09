@@ -6,10 +6,10 @@ spring:
     name: @project.artifactId@
     version: @project.version@
 
-logging:
-  level:
-    org:
-      springframework:
-        jdbc: DEBUG
+#logging:
+#  level:
+#    org:
+#      springframework:
+#        jdbc: DEBUG
 
 
